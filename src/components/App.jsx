@@ -14,7 +14,7 @@ export const App = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-
+  ////
   useEffect(() => {
     async function getImages() {
       try {

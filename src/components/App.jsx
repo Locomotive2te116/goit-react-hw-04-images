@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Button } from './Button/Button';
 import { getPhotos } from '../Api/api';
@@ -6,84 +6,64 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import s from './App.module.css';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
-export class App extends React.Component {
-  state = {
-    imagesData: [],
-    page: 1,
-    userInput: 'locomotive',
-    loading: false,
-    modalImageUrl: '',
-    isModalOpen: false,
-  };
 
-  buttonLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+export const App = () => {
+  const [imagesData, setImagesData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [userInput, setUserInput] = useState('locomotive');
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
 
-  async componentDidMount() {
-    try {
-      this.setState({ loading: true });
-      const images = await getPhotos(this.state.userInput, this.state.page);
-      this.setState({ imagesData: [...images] });
-    } catch (error) {
-      console.error();
-    } finally {
-      this.setState({ loading: false });
-    }
-  }
-
-  async componentDidUpdate(_, prevState) {
-    if (
-      prevState.page !== this.state.page ||
-      this.state.userInput !== prevState.userInput
-    ) {
+  useEffect(() => {
+    async function getImages() {
       try {
-        this.setState({ loading: true });
-        const images = await getPhotos(this.state.userInput, this.state.page);
-        this.setState(prevState => ({
-          imagesData: [...prevState.imagesData, ...images],
-        }));
-        // this.setState({ imagesData: [...prevState.imagesData, ...images] });
+        setLoading(true);
+        const images = await getPhotos(userInput, page);
+        if (page === 1) {
+          setImagesData(images);
+        } else {
+          setImagesData(prevState => [...prevState, ...images]);
+        }
       } catch (error) {
-        console.error();
+        console.log(error);
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
-  }
-  onSubmit = e => {
+    getImages();
+  }, [userInput, page]);
+
+  const buttonLoadMore = () => {
+    setPage(prevState => prevState + 1);
+  };
+
+  const onSubmit = e => {
     e.preventDefault();
     const userInput = e.currentTarget.elements.userInput.value;
-    this.setState({ userInput: userInput, page: 1, imagesData: [] });
+    console.log(userInput);
+    setUserInput(userInput);
+    setPage(1);
+    setImagesData([]);
   };
-  openModal = imgUrl => {
-    this.setState(prevState => ({
-      isModalOpen: !prevState.isModalOpen,
-      modalImageUrl: imgUrl,
-    }));
-  };
-
-  closeModal = () => {
-    this.setState(prevState => ({ isModalOpen: !prevState.isModalOpen }));
+  const openModal = imgUrl => {
+    setIsModalOpen(prevState => !prevState);
+    setModalImageUrl(imgUrl);
   };
 
-  render() {
-    return (
-      <div className={s.App}>
-        <Searchbar onSubmit={this.onSubmit} />
-        <ImageGallery
-          imagesData={this.state.imagesData}
-          openModal={this.openModal}
-        />
-        {this.state.loading === true ? <Loader /> : null}
-        <Button buttonLoadMore={this.buttonLoadMore} />
-        {this.state.isModalOpen && (
-          <Modal
-            modalImageUrl={this.state.modalImageUrl}
-            closeModal={this.closeModal}
-          />
-        )}
-      </div>
-    );
-  }
-}
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div className={s.App}>
+      <Searchbar onSubmit={onSubmit} />
+      <ImageGallery imagesData={imagesData} openModal={openModal} />
+      {loading === true ? <Loader /> : null}
+      <Button buttonLoadMore={buttonLoadMore} />
+      {isModalOpen && (
+        <Modal modalImageUrl={modalImageUrl} closeModal={closeModal} />
+      )}
+    </div>
+  );
+};

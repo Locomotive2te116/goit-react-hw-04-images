@@ -5,9 +5,13 @@ export const ImageGallery = ({ imagesData, openModal }) => {
   return (
     <>
       <ul className={s.ImageGallery}>
-        {imagesData.map(item => {
+        {imagesData.map((item, index) => {
           return (
-            <ImageGalleryItem key={item.id} {...item} openModal={openModal} />
+            <ImageGalleryItem
+              key={item.id + index}
+              {...item}
+              openModal={openModal}
+            />
           );
         })}
       </ul>

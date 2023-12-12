@@ -3,12 +3,7 @@ import s from './Searchbar.module.css';
 export const Searchbar = ({ onSubmit }) => {
   return (
     <header className={s.Searchbar}>
-      <form
-        className={s.SearchForm}
-        onSubmit={() => {
-          onSubmit();
-        }}
-      >
+      <form className={s.SearchForm} onSubmit={onSubmit}>
         <button className={s.SearchFormButton} type="submit">
           <span className={s.SearchFormButtonLabel}>Search</span>
         </button>
